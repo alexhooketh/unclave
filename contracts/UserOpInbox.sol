@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
-import "@matterlabs/zksync-contracts/l2/contracts/bridge/interfaces/IL2Bridge.sol";
+import "./node_modules/@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
+import "./node_modules/@matterlabs/zksync-contracts/l2/contracts/bridge/interfaces/IL2Bridge.sol";
 
 // userop inbox collects userop hashes, builds uint256 userop "prints" from them and adds these prints to a single inbox print.
 // every userop request has to carry 0.0001 eth fee, 50% of which will be sent to the one who initiated the sending to the L1 controller contract,
