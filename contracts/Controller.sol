@@ -47,20 +47,20 @@ abstract contract Controller is IController {
         emit OutgoingPrintUpdate(chainId, userOp);
     }
 
-    function _sendPrintMessage(uint256 chainId, bytes32 print, uint256 value) internal {
+    function _sendPrintMessage(uint256 chainId, bytes32 print, uint256 value, bytes memory txData) internal {
         address chain = chainManagers[chainId];
         require(chain != address(0), "ic");
 
-        (bool s,) = chain.delegatecall(abi.encodeWithSignature("sendPrintMessage(address,bytes32,uint256)", controllers[chainId], print, value));
+        (bool s,) = chain.delegatecall(abi.encodeWithSignature("sendPrintMessage(address,bytes32,uint256,bytes)", controllers[chainId], print, value, txData));
         require(s);
     }
 
-    function drop(uint256 chainId) external {
+    function drop(uint256 chainId, bytes calldata txData) external {
         bytes32 print = outgoingPrints[chainId];
         uint256 userOpsCount = outgoingPrintsCount[chainId];
 
         uint256 feeToPay = fee / 2 * userOpsCount;
-        _sendPrintMessage(chainId, print, feeToPay);
+        _sendPrintMessage(chainId, print, feeToPay, txData);
 
         emit OutgoingPrintDropped(chainId, print, userOpsCount);
 

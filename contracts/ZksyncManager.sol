@@ -8,13 +8,18 @@ contract ZksyncManager is IChainManager {
     IZkSync constant zksync = IZkSync(0x32400084C286CF3E17e7B677ea9583e60a000324);
 
     // address alias must already be applied to the input controller!
-    function sendPrintMessage(address controller, bytes32 print, uint256 value) external payable {
+    function sendPrintMessage(address controller, bytes32 print, uint256 value, bytes calldata txData) external payable {
         uint256 id;
         assembly {
             id := chainid()
         }
-        bytes[] memory factoryDeps;
-        zksync.requestL2Transaction(controller, value, abi.encodeWithSignature("receivePrint(uint256,bytes32)", id, print), 100000, 100000, factoryDeps, controller);
+        
+        (
+            uint256 _l2GasLimit,
+            uint256 _l2GasPerPubdataByteLimit,
+            bytes[] _factoryDeps
+        ) = abi.decode(txData);
+        zksync.requestL2Transaction(controller, value, abi.encodeWithSignature("receivePrint(uint256,bytes32)", id, print), _l2GasLimit, _l2GasPerPubdataByteLimit, _factoryDeps, controller);
     }
 
     function isIncomingPrintValid(address controller, bytes32 print, bytes calldata proof) external {

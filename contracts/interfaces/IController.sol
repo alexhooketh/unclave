@@ -17,7 +17,7 @@ interface IController {
     function knownControllers(uint256) external returns(address);
 
     function submit(uint256 chainId, address to, bytes32 userOpHash) external payable;
-    function drop(uint256 chainId) external;
+    function drop(uint256 chainId, bytes calldata txData) external;
     function _receivePrint(uint256 chainId, bytes32 print) external payable;
     function revealUserOps(uint256 chainId, UserOpRequest[] calldata userOps, bytes calldata proof) external;
 }
