@@ -4,12 +4,12 @@ pragma solidity ^0.8.9;
 import "./IController.sol";
 import "./IMiniAccount.sol";
 
-abstract contract BaseController is IController {
+abstract contract Controller is IController {
     mapping(uint256 => bytes32) public incomingPrints;
     mapping(uint256 => bytes32) public outgoingPrints;
     mapping(uint256 => uint256) public outgoingPrintsCount;
-    
-    mapping(uint256 => address) public knownControllers;
+
+    mapping(uint256 => address) public controllers;
     mapping(uint256 => address) public chainManagers;
 
     address public manager;
@@ -20,8 +20,8 @@ abstract contract BaseController is IController {
         require(msg.sender == manager, "gg");
         _;
     }
-    function setKnownController(uint256 chainId, address controller) external onlyManager {
-        knownControllers[chainId] = controller;
+    function setController(uint256 chainId, address controller) external onlyManager {
+        controllers[chainId] = controller;
     }
     function setChainManager(uint256 chainId, address chainManager) external onlyManager {
         chainManagers[chainId] = chainManager;
@@ -47,11 +47,11 @@ abstract contract BaseController is IController {
         emit OutgoingPrintUpdate(chainId, userOp);
     }
 
-    function _sendPrintMessage(uint256 destinationChainId, bytes32 print, uint256 value) internal {
-        address chain = chainManagers[destinationChainId];
+    function _sendPrintMessage(uint256 chainId, bytes32 print, uint256 value) internal {
+        address chain = chainManagers[chainId];
         require(chain != address(0), "ic");
 
-        (bool s,) = chain.delegatecall(abi.encodeWithSignature("sendPrintMessage(bytes32,uint256)", print, value));
+        (bool s,) = chain.delegatecall(abi.encodeWithSignature("sendPrintMessage(address,bytes32,uint256)", controllers[chainId], print, value));
         require(s);
     }
 
@@ -72,7 +72,7 @@ abstract contract BaseController is IController {
     }
 
     function receivePrint(uint256 chainId, bytes32 print) external payable {
-        require(msg.sender == knownControllers[chainId], "ws");
+        require(msg.sender == controllers[chainId], "ws");
         require(incomingPrints[chainId] == bytes32(0), "qf");
         incomingPrints[chainId] = print;
     }
@@ -83,8 +83,8 @@ abstract contract BaseController is IController {
             return false;
         }
 
-        (, bytes memory result) = chain.delegatecall(abi.encodeWithSignature("isIncomingPrintValid(bytes32,bytes)", print, proof));
-        return abi.decode(result, (bool));
+        (bool s,) = chain.delegatecall(abi.encodeWithSignature("isIncomingPrintValid(address, bytes32,bytes)", controllers[chainId], print, proof));
+        return s;
     }
 
     function revealUserOps(uint256 chainId, UserOpRequest[] calldata userOps, bytes calldata proof) external {
