@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import "./IController.sol";
-import "./IMiniAccount.sol";
+import "./interfaces/IController.sol";
+import "./interfaces/IMiniAccount.sol";
 
 abstract contract Controller is IController {
     mapping(uint256 => bytes32) public incomingPrints;

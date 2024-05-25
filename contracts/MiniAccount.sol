@@ -4,8 +4,8 @@ pragma solidity ^0.8.9;
 import "./node_modules/@account-abstraction/contracts/core/BaseAccount.sol";
 import "./node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./node_modules/@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import "./IMiniAccount.sol";
-import "./IController.sol";
+import "./interfaces/IMiniAccount.sol";
+import "./interfaces/IController.sol";
 
 contract MiniAccount is BaseAccount, IMiniAccount {
     mapping(bytes32 => bool) pendingActions;
