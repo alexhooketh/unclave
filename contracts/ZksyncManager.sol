@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.9;
+
+import "./IChainManager.sol";
+import "./node_modules/@matterlabs/zksync-contracts/l1/contracts/zksync/interfaces/IZkSync.sol";
+
+contract ZksyncManager is IChainManager {
+    IZkSync constant zksync = IZkSync(0x32400084C286CF3E17e7B677ea9583e60a000324);
+
+    // address alias must already be applied to the input controller!
+    function sendPrintMessage(address controller, bytes32 print, uint256 value) external payable {
+        uint256 id;
+        assembly {
+            id := chainid()
+        }
+        bytes[] memory factoryDeps;
+        zksync.requestL2Transaction(controller, value, abi.encodeWithSignature("receivePrint(uint256,bytes32)", id, print), 100000, 100000, factoryDeps, controller);
+    }
+
+    function isIncomingPrintValid(address controller, bytes32 print, bytes calldata proof) external {
+        (
+            uint256 _l2BlockNumber,
+            uint256 _index,
+            uint16 _l2TxNumberInBlock,
+            bytes32[] memory _proof
+        ) = abi.decode(proof);
+        bytes memory message = bytes(print);
+        L2Message memory message = L2Message({sender: controller, data: message, txNumberInBlock: _l2TxNumberInBlock});
+
+        bool success = zksync.proveL2MessageInclusion(
+            _l2BlockNumber,
+            _index,
+            message,
+            _proof
+        );
+        require(success);
+
+    }
+}
