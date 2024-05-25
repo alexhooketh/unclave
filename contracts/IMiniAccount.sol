@@ -5,4 +5,5 @@ import "./IController.sol";
 
 interface IMiniAccount {
     function submit(IController.UserOpRequest calldata userOp) external;
+    function changeAuthorizedSender(address _authorizedSender) external;
 }
